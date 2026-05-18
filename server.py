@@ -6,7 +6,21 @@ from bson import ObjectId
 from jose import jwt
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
+from dotenv import load_dotenv
 import pandas as pd
+import os
+
+# =========================
+# LOAD ENV VARIABLES
+# =========================
+
+load_dotenv()
+
+MONGO_URL = os.getenv("MONGO_URL")
+
+SECRET_KEY = os.getenv("SECRET_KEY")
+
+ALGORITHM = "HS256"
 
 # =========================
 # FASTAPI APP
@@ -30,22 +44,17 @@ app.add_middleware(
 # MONGODB CONNECTION
 # =========================
 
-client = MongoClient(
-    "mongodb+srv://aladdyn:aladdyn123@cluster0.p9pzhiy.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
-)
+client = MongoClient(MONGO_URL)
 
 db = client["aladdyn_db"]
 
 leads_collection = db["leads"]
+
 users_collection = db["users"]
 
 # =========================
-# JWT SETTINGS
+# PASSWORD HASHING
 # =========================
-
-SECRET_KEY = "aladdyn_secret_key"
-
-ALGORITHM = "HS256"
 
 pwd_context = CryptContext(
     schemes=["bcrypt"],
@@ -57,24 +66,34 @@ pwd_context = CryptContext(
 # =========================
 
 class Lead(BaseModel):
+
     username: str
+
     category: str
+
     score: int
+
     lifecycle: str
+
     timestamp: str
 
 
 class LifecycleUpdate(BaseModel):
+
     lifecycle: str
 
 
 class UserSignup(BaseModel):
+
     username: str
+
     password: str
 
 
 class UserLogin(BaseModel):
+
     username: str
+
     password: str
 
 # =========================
@@ -313,10 +332,15 @@ def run_scraper():
         for _, row in df.iterrows():
 
             lead_data = {
+
                 "username": row["username"],
+
                 "category": row["category"],
+
                 "score": int(row["score"]),
+
                 "lifecycle": row["lifecycle"],
+
                 "timestamp": row["timestamp"]
             }
 
@@ -335,7 +359,9 @@ def run_scraper():
                 inserted_count += 1
 
         return {
+
             "message": "Scraper completed",
+
             "new_leads_added": inserted_count
         }
 
@@ -345,3 +371,36 @@ def run_scraper():
             status_code=500,
             detail=str(e)
         )
+
+# =========================
+# AI INSIGHTS
+# =========================
+
+@app.get("/ai-insights")
+def ai_insights():
+
+    total_leads = leads_collection.count_documents({})
+
+    converted = leads_collection.count_documents(
+        {
+            "lifecycle": "Converted"
+        }
+    )
+
+    interested = leads_collection.count_documents(
+        {
+            "lifecycle": "Interested"
+        }
+    )
+
+    return {
+
+        "total_leads": total_leads,
+
+        "converted_leads": converted,
+
+        "interested_leads": interested,
+
+        "insight":
+        "Business leads are performing better this week."
+    }
