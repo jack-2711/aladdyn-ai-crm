@@ -1,13 +1,13 @@
 from pymongo import MongoClient
-
+from scrapers.news_scraper import fetch_news_leads
 from scrapers.linkedin_scraper import fetch_linkedin_leads
 from scrapers.crunchbase_scraper import fetch_crunchbase_leads
 from scrapers.googlemaps_scraper import fetch_googlemaps_leads
 from scrapers.producthunt_scraper import fetch_producthunt_leads
 from scrapers.instagram_scraper import fetch_instagram_leads
-
+from scrapers.github_api import fetch_github_leads
 from ai_scoring import predict_score
-
+from recommendation_engine import generate_recommendation
 
 # MongoDB Connection
 MONGO_URL = "mongodb+srv://aladdyn:aladdyn123@cluster0.p9pzhiy.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
@@ -35,7 +35,8 @@ def fetch_all_leads():
     all_leads.extend(googlemaps)
     all_leads.extend(producthunt)
     all_leads.extend(instagram)
-
+    all_leads.extend(fetch_news_leads())
+    all_leads.extend(fetch_github_leads())
     return all_leads
 
 
@@ -59,6 +60,7 @@ def insert_leads():
             )
 
             lead["ai_score"] = score
+            lead["recommendation"] = generate_recommendation( score,lead["platform"])
 
             # Priority Logic
             if score > 80:

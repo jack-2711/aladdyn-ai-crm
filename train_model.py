@@ -3,59 +3,67 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.preprocessing import LabelEncoder
 import joblib
 
-# Sample Training Data
 data = {
 
     "platform": [
         "LinkedIn",
         "Crunchbase",
-        "Instagram",
         "Google Maps",
-        "Product Hunt"
+        "Instagram",
+        "Product Hunt",
+        "NewsAPI",
+        "GitHub API",
+        "LinkedIn API"
     ],
 
     "industry": [
         "AI",
         "Fintech",
-        "Fashion",
         "Healthcare",
-        "SaaS"
+        "Fashion",
+        "SaaS",
+        "Startup",
+        "Open Source",
+        "Business"
     ],
 
     "score": [
         95,
         90,
-        60,
+        85,
         70,
-        85
+        88,
+        89,
+        92,
+        91
     ]
 }
 
 df = pd.DataFrame(data)
 
-# Encode Text Data
 platform_encoder = LabelEncoder()
 industry_encoder = LabelEncoder()
 
-df["platform"] = platform_encoder.fit_transform(df["platform"])
-df["industry"] = industry_encoder.fit_transform(df["industry"])
+df["platform_encoded"] = platform_encoder.fit_transform(
+    df["platform"]
+)
 
-# Features
-X = df[["platform", "industry"]]
+df["industry_encoded"] = industry_encoder.fit_transform(
+    df["industry"]
+)
 
-# Target
+X = df[["platform_encoded", "industry_encoded"]]
+
 y = df["score"]
 
-# Train Model
 model = RandomForestRegressor()
 
 model.fit(X, y)
 
-# Save Model
 joblib.dump(model, "lead_model.pkl")
 
-# Save Encoders
 joblib.dump(platform_encoder, "platform_encoder.pkl")
+
 joblib.dump(industry_encoder, "industry_encoder.pkl")
 
 print("AI Model Trained Successfully!")
