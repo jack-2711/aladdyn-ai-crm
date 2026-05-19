@@ -1,120 +1,95 @@
 import { useState } from "react";
+import axios from "axios";
+import "./App.css";
 
-function Auth({ setIsLoggedIn }) {
+const API = "http://127.0.0.1:8000";
 
-  const [isSignup, setIsSignup] =
-    useState(false);
+function Auth({ setLoggedIn, fetchLeads }) {
 
-  const [username, setUsername] =
-    useState("");
+  const [isSignup, setIsSignup] = useState(false);
 
-  const [password, setPassword] =
-    useState("");
+  const [authData, setAuthData] = useState({
+    username: "",
+    password: "",
+  });
 
   const handleAuth = async () => {
 
-    const endpoint = isSignup
-      ? "signup"
-      : "login";
+    try {
 
-    const response = await fetch(
-      `http://127.0.0.1:8000/${endpoint}`,
-      {
+      const endpoint = isSignup
+        ? "signup"
+        : "login";
 
-        method: "POST",
-
-        headers: {
-          "Content-Type":
-            "application/json"
-        },
-
-        body: JSON.stringify({
-          username,
-          password
-        })
-      }
-    );
-
-    const data =
-      await response.json();
-
-    alert(
-      data.message ||
-      "Authentication successful"
-    );
-
-    if (data.access_token) {
-
-      localStorage.setItem(
-        "token",
-        data.access_token
+      const response = await axios.post(
+        `${API}/${endpoint}`,
+        authData
       );
 
-      setIsLoggedIn(true);
+      if (!isSignup) {
+
+        localStorage.setItem(
+          "token",
+          response.data.access_token
+        );
+
+        setLoggedIn(true);
+
+        fetchLeads();
+      }
+
+      alert(
+        isSignup
+          ? "Signup Successful"
+          : "Login Successful"
+      );
+
+    } catch (error) {
+
+      console.log(error);
+
+      alert("Authentication Failed");
+
     }
   };
 
   return (
 
-    <div
-      style={{
-        minHeight: "100vh",
-        backgroundColor: "#020617",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        color: "white"
-      }}
-    >
+    <div className="auth-container">
 
-      <div
-        style={{
-          backgroundColor: "#1e293b",
-          padding: "40px",
-          borderRadius: "20px",
-          width: "350px"
-        }}
-      >
+      <div className="auth-box">
 
-        <h1
-          style={{
-            marginBottom: "30px",
-            textAlign: "center"
-          }}
-        >
+        <h2>
           {isSignup
-            ? "Signup"
+            ? "Create Account"
             : "Login"}
-        </h1>
+        </h2>
 
         <input
           type="text"
           placeholder="Username"
-          value={username}
+          value={authData.username}
           onChange={(e) =>
-            setUsername(
-              e.target.value
-            )
+            setAuthData({
+              ...authData,
+              username: e.target.value,
+            })
           }
-          style={inputStyle}
         />
 
         <input
           type="password"
           placeholder="Password"
-          value={password}
+          value={authData.password}
           onChange={(e) =>
-            setPassword(
-              e.target.value
-            )
+            setAuthData({
+              ...authData,
+              password: e.target.value,
+            })
           }
-          style={inputStyle}
         />
 
-        <button
-          onClick={handleAuth}
-          style={buttonStyle}
-        >
+        <button onClick={handleAuth}>
           {isSignup
             ? "Signup"
             : "Login"}
@@ -122,9 +97,9 @@ function Auth({ setIsLoggedIn }) {
 
         <p
           style={{
-            marginTop: "20px",
-            textAlign: "center",
-            cursor: "pointer"
+            marginTop: "15px",
+            cursor: "pointer",
+            color: "#00C2FF",
           }}
           onClick={() =>
             setIsSignup(!isSignup)
@@ -142,35 +117,5 @@ function Auth({ setIsLoggedIn }) {
     </div>
   );
 }
-
-const inputStyle = {
-
-  width: "100%",
-
-  padding: "12px",
-
-  marginBottom: "20px",
-
-  borderRadius: "8px",
-
-  border: "none"
-};
-
-const buttonStyle = {
-
-  width: "100%",
-
-  padding: "12px",
-
-  backgroundColor: "#06b6d4",
-
-  color: "white",
-
-  border: "none",
-
-  borderRadius: "8px",
-
-  cursor: "pointer"
-};
 
 export default Auth;
