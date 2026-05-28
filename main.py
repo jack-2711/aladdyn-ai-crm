@@ -66,3 +66,16 @@ df.to_csv("leads.csv", index=False)
 
 print(df)
 print("Lead Pipeline Completed Successfully!")
+from fastapi import FastAPI
+import requests
+import os
+
+app = FastAPI()
+
+TOKEN = os.getenv("INSTAGRAM_ACCESS_TOKEN")
+
+@app.get("/instagram/profile")
+def get_instagram_profile():
+    url = f"https://graph.instagram.com/v23.0/me?fields=id,username&access_token={TOKEN}"
+    response = requests.get(url)
+    return response.json()

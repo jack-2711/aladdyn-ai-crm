@@ -1,443 +1,149 @@
-import { useEffect, useState } from "react";
-import axios from "axios";
+import React, { useEffect, useState } from "react";
 
-import {
-  PieChart,
-  Pie,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid
-} from "recharts";
-
-function RealLeads() {
+const RealLeads = () => {
 
   const [leads, setLeads] = useState([]);
-
   const [alerts, setAlerts] = useState([]);
 
-  const [search, setSearch] = useState("");
+  // Fetch Leads
+  const fetchLeads = async () => {
 
-  const [platformFilter, setPlatformFilter] = useState("");
+    try {
 
-  const [priorityFilter, setPriorityFilter] = useState("");
+      const response = await fetch(
+        "http://127.0.0.1:8000/real-leads"
+      );
 
-  // Auto Refresh
+      const data = await response.json();
+
+      setLeads(data.leads || []);
+
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  // Fetch Alerts
+  const fetchAlerts = async () => {
+
+    try {
+
+      const response = await fetch(
+        "http://127.0.0.1:8000/alerts"
+      );
+
+      const data = await response.json();
+
+      setAlerts(data.alerts || []);
+
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  // Generate Instagram Leads
+  const generateInstagramLeads = async () => {
+
+    try {
+
+      await fetch(
+        "http://127.0.0.1:8000/instagram/posts"
+      );
+
+      fetchLeads();
+      fetchAlerts();
+
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   useEffect(() => {
 
-    const fetchLeads = () => {
-
-      // Leads API
-      axios
-        .get("http://127.0.0.1:8000/real-leads")
-        .then((response) => {
-          setLeads(response.data);
-        });
-
-      // Alerts API
-      axios
-        .get("http://127.0.0.1:8000/alerts")
-        .then((response) => {
-          setAlerts(response.data);
-        });
-
-    };
-
-    // Initial Fetch
     fetchLeads();
-
-    // Auto Refresh Every 5 Seconds
-    const interval = setInterval(fetchLeads, 5000);
-
-    return () => clearInterval(interval);
+    fetchAlerts();
 
   }, []);
 
-  // Filter Leads
-  const filteredLeads = leads.filter((lead) => {
-
-    const matchesSearch =
-      lead.company_name
-        .toLowerCase()
-        .includes(search.toLowerCase());
-
-    const matchesPlatform =
-      platformFilter === "" ||
-      lead.platform === platformFilter;
-
-    const matchesPriority =
-      priorityFilter === "" ||
-      lead.priority === priorityFilter;
-
-    return (
-      matchesSearch &&
-      matchesPlatform &&
-      matchesPriority
-    );
-
-  });
-
-  // Analytics
-  const totalLeads = leads.length;
-
-  const hotLeads = leads.filter(
-    (lead) => lead.priority === "HOT"
-  ).length;
-
-  const avgScore =
-    leads.reduce((sum, lead) => sum + lead.ai_score, 0) /
-    (leads.length || 1);
-
-  const platforms = [...new Set(
-    leads.map((lead) => lead.platform)
-  )].length;
-
-  // Pie Chart Data
-  const platformData = [
-
-    {
-      name: "LinkedIn",
-      value: leads.filter(
-        (l) => l.platform === "LinkedIn"
-      ).length
-    },
-
-    {
-      name: "Crunchbase",
-      value: leads.filter(
-        (l) => l.platform === "Crunchbase"
-      ).length
-    },
-
-    {
-      name: "Instagram",
-      value: leads.filter(
-        (l) => l.platform === "Instagram"
-      ).length
-    },
-
-    {
-      name: "Google Maps",
-      value: leads.filter(
-        (l) => l.platform === "Google Maps"
-      ).length
-    },
-
-    {
-      name: "Product Hunt",
-      value: leads.filter(
-        (l) => l.platform === "Product Hunt"
-      ).length
-    }
-
-  ];
-
-  // Bar Chart Data
-  const priorityData = [
-
-    {
-      priority: "HOT",
-      count: leads.filter(
-        (l) => l.priority === "HOT"
-      ).length
-    },
-
-    {
-      priority: "WARM",
-      count: leads.filter(
-        (l) => l.priority === "WARM"
-      ).length
-    },
-
-    {
-      priority: "COLD",
-      count: leads.filter(
-        (l) => l.priority === "COLD"
-      ).length
-    }
-
-  ];
-
   return (
+    <div style={{ padding: "20px" }}>
 
-    <div
-      style={{
-        backgroundColor: "#020617",
-        minHeight: "100vh",
-        padding: "30px",
-        color: "white"
-      }}
-    >
+      <h1>🚀 Aladdyn AI Lead Platform</h1>
 
-      {/* Title */}
-      <h1
+      <button
+        onClick={generateInstagramLeads}
         style={{
-          fontSize: "45px",
-          marginBottom: "30px"
+          padding: "10px 20px",
+          marginBottom: "20px",
+          cursor: "pointer"
         }}
       >
-        🚀 AI Lead Intelligence Dashboard
-      </h1>
+        Fetch Instagram Leads
+      </button>
 
-      {/* Live Alerts */}
-      <div
-        style={{
-          marginBottom: "30px"
-        }}
-      >
+      <h2>🔥 Alerts</h2>
 
-        <h2>🚨 Live Alerts</h2>
-
-        {alerts.map((alert, index) => (
-
+      {
+        alerts.map((alert, index) => (
           <div
             key={index}
             style={{
-              backgroundColor: "#7f1d1d",
+              background: "#ffcccc",
+              padding: "10px",
+              marginBottom: "10px",
+              borderRadius: "10px"
+            }}
+          >
+            {alert.message} | Score: {alert.score}
+          </div>
+        ))
+      }
+
+      <h2>📈 Real Leads</h2>
+
+      {
+        leads.map((lead, index) => (
+          <div
+            key={index}
+            style={{
+              border: "1px solid #ccc",
               padding: "15px",
-              borderRadius: "10px",
-              marginBottom: "10px"
+              marginBottom: "15px",
+              borderRadius: "10px"
             }}
           >
 
-            {alert.message} — {alert.company_name}
+            <h3>{lead.platform}</h3>
+
+            <p>
+              <strong>Caption:</strong> {lead.caption}
+            </p>
+
+            <p>
+              <strong>AI Score:</strong> {lead.ai_score}
+            </p>
+
+            <p>
+              <strong>Media Type:</strong> {lead.media_type}
+            </p>
+
+            {
+              lead.media_url && (
+                <img
+                  src={lead.media_url}
+                  alt="instagram"
+                  width="250"
+                  style={{ borderRadius: "10px" }}
+                />
+              )
+            }
 
           </div>
-
-        ))}
-
-      </div>
-
-      {/* Analytics Cards */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-          gap: "20px",
-          marginBottom: "40px"
-        }}
-      >
-
-        <div style={cardStyle}>
-          <h2>Total Leads</h2>
-          <h1>{totalLeads}</h1>
-        </div>
-
-        <div style={cardStyle}>
-          <h2>HOT Leads</h2>
-          <h1>{hotLeads}</h1>
-        </div>
-
-        <div style={cardStyle}>
-          <h2>Platforms</h2>
-          <h1>{platforms}</h1>
-        </div>
-
-        <div style={cardStyle}>
-          <h2>Average AI Score</h2>
-          <h1>{avgScore.toFixed(1)}</h1>
-        </div>
-
-      </div>
-
-      {/* Charts */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: "30px",
-          marginBottom: "50px"
-        }}
-      >
-
-        {/* Pie Chart */}
-        <div style={chartStyle}>
-
-          <h2>Platform Distribution</h2>
-
-          <ResponsiveContainer width="100%" height={300}>
-
-            <PieChart>
-
-              <Pie
-                data={platformData}
-                dataKey="value"
-                outerRadius={100}
-                fill="#38bdf8"
-                label
-              />
-
-              <Tooltip />
-
-              <Legend />
-
-            </PieChart>
-
-          </ResponsiveContainer>
-
-        </div>
-
-        {/* Bar Chart */}
-        <div style={chartStyle}>
-
-          <h2>Lead Priority</h2>
-
-          <ResponsiveContainer width="100%" height={300}>
-
-            <BarChart data={priorityData}>
-
-              <CartesianGrid strokeDasharray="3 3" />
-
-              <XAxis dataKey="priority" />
-
-              <YAxis />
-
-              <Tooltip />
-
-              <Bar dataKey="count" fill="#22c55e" />
-
-            </BarChart>
-
-          </ResponsiveContainer>
-
-        </div>
-
-      </div>
-
-      {/* Search + Filters */}
-      <div
-        style={{
-          display: "flex",
-          gap: "20px",
-          marginBottom: "30px",
-          flexWrap: "wrap"
-        }}
-      >
-
-        {/* Search */}
-        <input
-          type="text"
-          placeholder="Search company..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          style={{
-            padding: "12px",
-            borderRadius: "10px",
-            border: "none",
-            width: "250px"
-          }}
-        />
-
-        {/* Platform Filter */}
-        <select
-          value={platformFilter}
-          onChange={(e) => setPlatformFilter(e.target.value)}
-          style={{
-            padding: "12px",
-            borderRadius: "10px",
-            border: "none"
-          }}
-        >
-
-          <option value="">All Platforms</option>
-
-          <option value="LinkedIn">LinkedIn</option>
-
-          <option value="Crunchbase">Crunchbase</option>
-
-          <option value="Instagram">Instagram</option>
-
-          <option value="Google Maps">Google Maps</option>
-
-          <option value="Product Hunt">Product Hunt</option>
-
-        </select>
-
-        {/* Priority Filter */}
-        <select
-          value={priorityFilter}
-          onChange={(e) => setPriorityFilter(e.target.value)}
-          style={{
-            padding: "12px",
-            borderRadius: "10px",
-            border: "none"
-          }}
-        >
-
-          <option value="">All Priorities</option>
-
-          <option value="HOT">HOT</option>
-
-          <option value="WARM">WARM</option>
-
-          <option value="COLD">COLD</option>
-
-        </select>
-
-      </div>
-
-      {/* Lead Cards */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-          gap: "20px"
-        }}
-      >
-
-        {filteredLeads.map((lead, index) => (
-
-          <div
-            key={index}
-            style={{
-              backgroundColor: "#1e293b",
-              padding: "20px",
-              borderRadius: "15px",
-              transition: "0.3s"
-            }}
-          >
-
-            <h2 style={{ color: "#38bdf8" }}>
-              {lead.company_name}
-            </h2>
-
-            <p>📱 Platform: {lead.platform}</p>
-
-            <p>🏭 Industry: {lead.industry}</p>
-
-            <p>📍 Location: {lead.location}</p>
-
-            <p>🤖 AI Score: {lead.ai_score}</p>
-
-            <p>🔥 Priority: {lead.priority}</p>
-
-          </div>
-
-        ))}
-
-      </div>
+        ))
+      }
 
     </div>
   );
-}
-
-// Analytics Card Style
-const cardStyle = {
-  backgroundColor: "#1e293b",
-  padding: "25px",
-  borderRadius: "15px",
-  textAlign: "center"
-};
-
-// Chart Style
-const chartStyle = {
-  backgroundColor: "#1e293b",
-  padding: "20px",
-  borderRadius: "15px"
 };
 
 export default RealLeads;

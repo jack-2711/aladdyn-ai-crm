@@ -12,8 +12,6 @@ import asyncio
 import random
 import time
 from datetime import datetime
-from datetime import datetime
-import random
 
 # Import our monitor (works even without Playwright installed for demo)
 try:
@@ -253,92 +251,3 @@ def update_lead_status(lead_id: str, update: LeadStatusUpdate):
 @app.get("/health")
 def health():
     return {"status": "ok", "timestamp": datetime.utcnow().isoformat()}
-@app.get("/linkedin/session-status")
-def session_status():
-
-    return {
-
-        "platform": "LinkedIn",
-
-        "session_management": "ACTIVE",
-
-        "authentication": "Cookie-Based Session Persistence",
-
-        "browser_mode": "Stealth Playwright",
-
-        "timezone": "Asia/Kolkata",
-
-        "anti_detection": [
-            "Randomized delays",
-            "Viewport randomization",
-            "Cookie persistence",
-            "Stealth browser",
-            "Controlled action limits"
-        ],
-
-        "status": "CONNECTED"
-    }
-@app.get("/linkedin/live-monitoring")
-def live_monitoring():
-
-    sample_users = [
-        "Rahul Sharma",
-        "Priya Verma",
-        "Arjun Patel",
-        "Sarah Johnson",
-        "Aisha Khan"
-    ]
-
-    actions = [
-        "Liked AI CRM Post",
-        "Commented on Startup Automation",
-        "Viewed CRM Campaign",
-        "Engaged with Lead Dashboard"
-    ]
-
-    interests = [
-        "Lead Generation",
-        "AI Automation",
-        "CRM Analytics",
-        "Startup Growth"
-    ]
-
-    leads = []
-
-    for i in range(5):
-
-        score = random.randint(70, 98)
-
-        leads.append({
-
-            "lead_id": f"LI_{1000+i}",
-
-            "name": random.choice(sample_users),
-
-            "engagement": random.choice(actions),
-
-            "interest": random.choice(interests),
-
-            "lead_score": score,
-
-            "priority": (
-                "HOT LEAD"
-                if score > 90
-                else "HIGH PRIORITY"
-            ),
-
-            "detected_at": datetime.now().strftime("%H:%M:%S"),
-
-            "platform": "LinkedIn"
-        })
-
-    return {
-
-        "monitoring_status": "LIVE",
-
-        "browser_engine": "Playwright Stealth",
-
-        "session_mode": "Persistent Cookies",
-
-        "engagements": leads
-    }

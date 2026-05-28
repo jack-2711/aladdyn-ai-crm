@@ -24,4 +24,6 @@ dist-ssr
 *.sw?
 __pycache__/
 *.pyc
-*.pkl
+.env
+venv
+
